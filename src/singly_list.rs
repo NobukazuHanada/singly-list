@@ -1,19 +1,19 @@
-use std::{fmt::Debug};
+use std::fmt::Debug;
 
 type Link<T> = Option<Box<Node<T>>>;
 
 pub struct SinglyList<T> {
-    head : Link<T>,
-    length : usize,
+    head: Link<T>,
+    length: usize,
 }
 
 struct Node<T> {
-    element: T,  
-    next: Link<T> 
+    element: T,
+    next: Link<T>,
 }
 
 pub struct IntoIter<T> {
-    next: SinglyList<T>
+    next: SinglyList<T>,
 }
 pub struct Iter<'a, T: 'a> {
     next: Option<&'a Node<T>>,
@@ -26,18 +26,16 @@ pub struct IterMut<'a, T: 'a> {
 impl<T> SinglyList<T> {
     pub fn new() -> Self {
         SinglyList {
-            head : None,
-            length : 0
+            head: None,
+            length: 0,
         }
     }
 
     pub fn push(&mut self, element: T) {
-        let new_node = Box::new(
-            Node {
-                element,
-                next: self.head.take()
-            }
-        );
+        let new_node = Box::new(Node {
+            element,
+            next: self.head.take(),
+        });
         self.head = Some(new_node);
         self.length += 1;
     }
@@ -47,12 +45,12 @@ impl<T> SinglyList<T> {
             self.head = head_node.next;
             self.length -= 1;
             Some(head_node.element)
-        }else{
+        } else {
             None
         }
     }
 
-    pub fn insert(&mut self, index: usize, element:  T) {
+    pub fn insert(&mut self, index: usize, element: T) {
         let mut counter = 0;
         let mut node = self.head.as_mut();
 
@@ -60,7 +58,7 @@ impl<T> SinglyList<T> {
             if counter == index {
                 let new_node = Box::new(Node {
                     element,
-                    next : current_node.next.take()
+                    next: current_node.next.take(),
                 });
                 current_node.next = Some(new_node);
                 self.length += 1;
@@ -71,12 +69,12 @@ impl<T> SinglyList<T> {
         }
     }
 
-    pub fn delete(&mut self, index : usize ) -> Option<T> {
+    pub fn delete(&mut self, index: usize) -> Option<T> {
         let mut counter = 0;
         let mut node = self.head.as_mut();
 
         if index == 0 {
-            return self.pop()
+            return self.pop();
         }
 
         while let Some(current_node) = node {
@@ -86,7 +84,7 @@ impl<T> SinglyList<T> {
                     let new_node = delete_node.next.take();
                     current_node.next = new_node;
                     self.length -= 0;
-                    return Some(delete_node.element)
+                    return Some(delete_node.element);
                 }
             }
             node = current_node.next.as_mut();
@@ -96,18 +94,21 @@ impl<T> SinglyList<T> {
     }
 
     pub fn iter(&self) -> Iter<T> {
-        Iter { next: self.head.as_ref().map(|node| node.as_ref() ) }
+        Iter {
+            next: self.head.as_ref().map(|node| node.as_ref()),
+        }
     }
 
     pub fn iter_mut(&mut self) -> IterMut<T> {
-        IterMut {next: self.head.as_mut().map(|node| node.as_mut())}
+        IterMut {
+            next: self.head.as_mut().map(|node| node.as_mut()),
+        }
     }
-
 }
 
 impl<T> Default for SinglyList<T> {
     fn default() -> Self {
-        Self::new()   
+        Self::new()
     }
 }
 
@@ -116,7 +117,7 @@ impl<T> IntoIterator for SinglyList<T> {
     type IntoIter = IntoIter<T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        IntoIter { next : self }
+        IntoIter { next: self }
     }
 }
 
@@ -144,23 +145,22 @@ impl<T> Iterator for IntoIter<T> {
 
 impl<'a, T> Iterator for Iter<'a, T> {
     type Item = &'a T;
-    fn next(&mut self) ->  Option<Self::Item>  {
+    fn next(&mut self) -> Option<Self::Item> {
         self.next.map(|node| {
             self.next = node.next.as_ref().map(|node| node.as_ref());
             &node.element
-        } )
-    } 
-
+        })
+    }
 }
 
 impl<'a, T> Iterator for IterMut<'a, T> {
     type Item = &'a mut T;
-    fn next(&mut self) ->  Option<Self::Item>  {
+    fn next(&mut self) -> Option<Self::Item> {
         self.next.take().map(|node| {
             self.next = node.next.as_mut().map(|node| node.as_mut());
             &mut node.element
-        } )
-    }  
+        })
+    }
 }
 
 #[cfg(test)]
@@ -168,8 +168,8 @@ use proptest::prelude::*;
 
 #[cfg(test)]
 prop_compose! {
-    fn vec_and_index() 
-    (v in prop::collection::vec(".*", 1..100))  
+    fn vec_and_index()
+    (v in prop::collection::vec(".*", 1..100))
     (i in 0..v.len(), v in Just(v) )
     -> (Vec<String>, usize) {
         (v, i)
