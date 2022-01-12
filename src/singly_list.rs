@@ -238,4 +238,43 @@ proptest! {
         prop_assert_eq!(list.length, result_vec.len());
         prop_assert_eq!(format!("{:?}", list), format!("{:?}",result_vec ));
     }
+
+    #[test]
+    fn singly_list_delete_test(
+        head in prop::collection::vec(".*", 0..100),
+        delete_body in prop::collection::vec(".*", 0..100),
+        tail in prop::collection::vec(".*", 0..100)
+    ) {
+        let mut clone_head = head.clone();
+        let mut clone_delete_body = delete_body.clone();
+        let mut clone_tail_body = tail.clone();
+        clone_head.append(&mut clone_delete_body);
+        clone_head.append(&mut clone_tail_body);
+
+        let mut singly_list = SinglyList::new();
+        let mut deleted_elements = vec![];
+
+        for element in clone_head.iter().rev() {
+            singly_list.push(element);
+        }
+
+        for _ in delete_body.iter() {
+            if let Some(elem) = singly_list.delete(head.len()) {
+                deleted_elements.push(elem);
+            }
+        }
+
+        let mut expected_result = head.clone();
+        expected_result.append(&mut tail.clone());
+
+        prop_assert_eq!(
+            format!("{:?}", singly_list),
+            format!("{:?}", expected_result)
+        );
+
+        prop_assert_eq!(
+            format!("{:?}", deleted_elements),
+            format!("{:?}", delete_body)
+        );
+    }
 }
