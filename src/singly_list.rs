@@ -87,7 +87,7 @@ impl<T> SinglyList<T> {
                 if let Some(mut delete_node) = delete_node {
                     let new_node = delete_node.next.take();
                     current_node.next = new_node;
-                    self.length -= 0;
+                    self.length -= 1;
                     return Some(delete_node.element);
                 }
             }
@@ -95,6 +95,14 @@ impl<T> SinglyList<T> {
             counter += 1;
         }
         None
+    }
+
+    pub fn push_back(&mut self, element: T) {
+        self.insert(self.length, element)
+    }
+
+    pub fn pop_back(&mut self) -> Option<T> {
+        self.delete(self.length - 1)
     }
 
     pub fn iter(&self) -> Iter<T> {
@@ -277,4 +285,41 @@ proptest! {
             format!("{:?}", delete_body)
         );
     }
+
+    #[test]
+    fn singly_list_push_back_test(v in prop::collection::vec(0..500, 0..500)){
+        let mut list = SinglyList::new();
+        for elem in v.iter() {
+            list.push_back(elem)
+        }
+
+        prop_assert_eq!(list.length, v.len());
+        prop_assert_eq!(format!("{:?}", list), format!("{:?}",v));
+    }
+    #[test]
+    fn singly_list_pop_back_test((v, i) in vec_and_index()){
+        let mut list = SinglyList::new();
+        let mut pop_result : Vec<&String> = vec![];
+        for elem in v.iter() {
+            list.push_back(elem)
+        }
+        for _ in 0..i {
+            if let Some(result) = list.pop_back() {
+                pop_result.push(result);
+            }
+        }
+        pop_result.reverse();
+        
+        prop_assert_eq!(list.length, v.len() - i);
+        prop_assert_eq!(format!("{:?}", pop_result), format!("{:?}", &v[(v.len() - i)..] ));
+        prop_assert_eq!(format!("{:?}", list), format!("{:?}", &v[0..(v.len() - i)]));
+
+        for elem in pop_result.iter() {
+            list.push_back(elem);
+        }
+
+        prop_assert_eq!(list.length, v.len());
+        prop_assert_eq!(format!("{:?}", list), format!("{:?}",v));
+    }
+
 }
