@@ -54,8 +54,12 @@ impl<T> SinglyList<T> {
         let mut counter = 0;
         let mut node = self.head.as_mut();
 
+        if index == 0 {
+            return self.push(element);
+        }
+
         while let Some(current_node) = node {
-            if counter == index {
+            if counter == index - 1 {
                 let new_node = Box::new(Node {
                     element,
                     next: current_node.next.take(),
@@ -211,5 +215,27 @@ proptest! {
 
         prop_assert_eq!(list.length, v.len());
         prop_assert_eq!(format!("{:?}", list), format!("{:?}",v));
+    }
+
+    #[test]
+    fn singly_list_insert_test((v, i) in vec_and_index(), v2 in proptest::collection::vec(".*", 0..100)) {
+        let mut list = SinglyList::new();
+        let mut result_vec = vec![];
+        for elem in v.iter().rev() {
+            list.push(elem);
+        }
+
+        for elem in v.iter() {
+            result_vec.push(elem);
+        }
+
+
+        for elem in v2.iter() {
+            list.insert(i, elem);
+            result_vec.insert(i, elem);
+        }
+
+        prop_assert_eq!(list.length, result_vec.len());
+        prop_assert_eq!(format!("{:?}", list), format!("{:?}",result_vec ));
     }
 }
