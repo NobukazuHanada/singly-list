@@ -59,7 +59,7 @@ impl<T> SinglyList<T> {
         while let Some(current_node) = node {
             if counter == index {
                 let new_node = Box::new(Node {
-                    element: element,
+                    element,
                     next : current_node.next.take()
                 });
                 current_node.next = Some(new_node);
@@ -95,12 +95,6 @@ impl<T> SinglyList<T> {
         None
     }
 
-    pub fn into_iter(self) -> IntoIter<T>{
-        IntoIter {
-            next : self
-        }
-    }
-
     pub fn iter(&self) -> Iter<T> {
         Iter { next: self.head.as_ref().map(|node| node.as_ref() ) }
     }
@@ -111,13 +105,28 @@ impl<T> SinglyList<T> {
 
 }
 
+impl<T> Default for SinglyList<T> {
+    fn default() -> Self {
+        Self::new()   
+    }
+}
+
+impl<T> IntoIterator for SinglyList<T> {
+    type Item = T;
+    type IntoIter = IntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        IntoIter { next : self }
+    }
+}
+
 impl<T: Debug> Debug for SinglyList<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "[")?;
         let mut peekable = self.iter().peekable();
         while let Some(element) = peekable.next() {
             write!(f, "{:?}", element)?;
-            if let Some(_) = peekable.peek() {
+            if peekable.peek().is_some() {
                 write!(f, ", ")?;
             }
         }
@@ -127,6 +136,7 @@ impl<T: Debug> Debug for SinglyList<T> {
 
 impl<T> Iterator for IntoIter<T> {
     type Item = T;
+
     fn next(&mut self) -> Option<T> {
         self.next.pop()
     }
